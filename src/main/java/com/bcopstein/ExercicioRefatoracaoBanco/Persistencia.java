@@ -1,4 +1,5 @@
 package com.bcopstein.ExercicioRefatoracaoBanco;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -13,12 +14,30 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Scanner;
 
+
 public class Persistencia {
     private final String NomeBDContas = "BDContasBNG.txt";
     private final String NomeBDOperacoes = "BDOperBNG.txt";
+	
+
+    private static Persistencia inst = null;
+
+    private Persistencia(){}
+
+    public static void delete(){
+        inst = null;
+    }
+
+    public static Persistencia getPersis(){
+        if(inst == null){
+            inst = new Persistencia();
+        }
+        return inst;
+    }
+
     
-    public Map<Integer,Conta> loadContas(){
-    	Map<Integer,Conta> contas = new HashMap<>();
+    public Map<Integer,Contas> loadContas(){
+    	Map<Integer,Contas> contas = new HashMap<>();
     	
         String currDir = Paths.get("").toAbsolutePath().toString();
         String nameComplete = currDir+"/"+NomeBDContas;
@@ -35,7 +54,7 @@ public class Persistencia {
                nomeCorr = sc.next();
                saldo = Double.parseDouble(sc.next());
                status = Integer.parseInt(sc.next());
-               Conta conta = new Conta(numero,nomeCorr,saldo,status);
+               Contas conta = new Contas(numero,nomeCorr,saldo,status);
                contas.put(numero, conta);
            }
         }catch (IOException x){ 
@@ -45,11 +64,12 @@ public class Persistencia {
         return contas;
     }
 
-    public void saveContas(Collection<Conta> contas) {
+
+    public void saveContas(Collection<Contas> contas) {
         Path path1 = Paths.get(NomeBDContas); 
         try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(path1, Charset.defaultCharset()))) 
         { 
-            for(Conta c: contas) 
+            for(Contas c: contas) 
                 writer.format(Locale.ENGLISH,
                 		      "%d;%s;%f;%d;",
                 		      c.getNumero(),c.getCorrentista(), 
@@ -61,11 +81,12 @@ public class Persistencia {
         } 
     }
 
-    public void saveOperacoes(Collection<Operacao> operacoes) {
+    
+    public void saveOperacoes(Collection<Operacoes> operacoes) {
         Path path1 = Paths.get(NomeBDOperacoes); 
         try (PrintWriter writer = new PrintWriter(Files.newBufferedWriter(path1, Charset.defaultCharset()))) 
         { 
-            for(Operacao op:operacoes) 
+            for(Operacoes op:operacoes) 
                 writer.format(Locale.ENGLISH,
                 		      "%d;%d;%d;%d;%d;%d;%d;%d;%f;%d;",  
                               op.getDia(),op.getMes(),op.getAno(),
@@ -79,13 +100,14 @@ public class Persistencia {
             System.err.format("Erro de E/S: %s%n", x); 
         } 
     }
+
     
-    public List<Operacao> loadOperacoes(){
-        List<Operacao> operacoes = new LinkedList<Operacao>();
+    public List<Operacoes> loadOperacoes(){
+        List<Operacoes> operacoes = new LinkedList<Operacoes>();
         
     	String currDir = Paths.get("").toAbsolutePath().toString();
         String nameComplete = currDir+"/"+NomeBDOperacoes;
-        System.out.println(nameComplete);
+        //System.out.println(nameComplete);
         Path path2 = Paths.get(nameComplete); 
         try (Scanner sc = new Scanner(Files.newBufferedReader(path2, Charset.defaultCharset()))){ 
            sc.useDelimiter("[;\n]"); // separadores: ; e nova linha 
@@ -106,7 +128,7 @@ public class Persistencia {
                valor = Double.parseDouble(sc.next());
                tipo = Integer.parseInt(sc.next());
                
-               Operacao op = new Operacao(
+               Operacoes op = new Operacoes(
             		   dia, mes, ano,
             		   hora, minuto, segundo,
 	                   numero, status,
@@ -120,4 +142,6 @@ public class Persistencia {
         } 
         return operacoes;    	
     }
+
+
 }
